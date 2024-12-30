@@ -47,13 +47,19 @@ public class CaseListener implements Listener {
   @EventHandler
   public void onAdvancement(PlayerAdvancementDoneEvent event) {
     String key = event.getAdvancement().key().namespace();
+    String name = event.getAdvancement().key().value();
 
     if(!key.equalsIgnoreCase("minecraft")) {
-//      System.out.println("ignoring advancement: " + key);
+      System.out.println("ignoring advancement: " + key);
       return;
     }
 
-//    System.out.println("advancement : " + key);
+    if(name.toLowerCase().startsWith("recipes/")) {
+      System.out.println("ignoring advancement: " + name);
+      return;
+    }
+
+    System.out.println("advancement : " + key + ":" + name);
 //    System.out.println("requirements : " + event.getAdvancement().getRequirements().getRequirements().size());
 
     ItemStack award = CasesStandalone.getInstance().getNewGambaToken();
