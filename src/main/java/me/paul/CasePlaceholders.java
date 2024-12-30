@@ -3,6 +3,7 @@ package me.paul;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.paul.util.CaseItem;
 import me.paul.util.CaseStats;
+import me.paul.util.Duration;
 import me.paul.util.Util;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -44,6 +45,9 @@ public class CasePlaceholders extends PlaceholderExpansion {
 
     if (params.equalsIgnoreCase("name")) {
       return player.getName();
+    } else if(params.equalsIgnoreCase("time_played")) {
+      int timePlayedSeconds = CaseStats.get(player.getUniqueId()).getTimePlayedSeconds();
+      return Duration.seconds(timePlayedSeconds).formatText();
     } else if (params.equalsIgnoreCase("player_total_opens")) {
       CaseStats stats = CaseStats.get(player.getUniqueId());
       return Util.format(stats.totalOpens());
@@ -59,7 +63,7 @@ public class CasePlaceholders extends PlaceholderExpansion {
     } else if (params.equalsIgnoreCase("server_total_emeralds_spent")) {
       int total = 0;
       for (CaseStats stats : CaseStats.getAll())
-        total += (stats.totalOpens() * 1);
+        total += stats.totalOpens();
       return Util.format(total);
     }
 
