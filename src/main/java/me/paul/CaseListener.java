@@ -50,12 +50,12 @@ public class CaseListener implements Listener {
     String name = event.getAdvancement().key().value();
 
     if(!key.equalsIgnoreCase("minecraft")) {
-      System.out.println("ignoring advancement: " + key);
+    //  System.out.println("ignoring advancement: " + key);
       return;
     }
 
     if(name.toLowerCase().startsWith("recipes/")) {
-      System.out.println("ignoring advancement: " + name);
+    //  System.out.println("ignoring advancement: " + name);
       return;
     }
 

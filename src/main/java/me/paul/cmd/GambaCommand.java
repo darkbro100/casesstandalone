@@ -12,13 +12,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class SpawnCommand implements CommandExecutor {
+public class GambaCommand implements CommandExecutor {
 
   @Override
   public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
     if (sender instanceof final Player player) {
-      Location spawn = Bukkit.getWorld("world").getSpawnLocation();
-      final HomeTimer timer = new HomeTimer(player, spawn);
+      Location gamba = new Location(Bukkit.getWorld("world"), 1, -62, -2);
+      gamba.setYaw(180);
+      gamba.setPitch(0);
+      final HomeTimer timer = new HomeTimer(player, gamba);
       TaskHolder homeHolder = new TaskHolder();
       Sync.get(player).interval(1).holder(homeHolder).run(() -> timer.run(homeHolder));
       player.sendMessage(Component.text("You will teleport in 3 seconds").color(TextColor.color(120, 120, 120)));

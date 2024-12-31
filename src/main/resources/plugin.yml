@@ -19,6 +19,8 @@ commands:
     description: TP to home
   sethome:
     description: Set home
+  gamba:
+    description: TP to gamble
   displayname:
     description: Change display name
     aliases: [dn]

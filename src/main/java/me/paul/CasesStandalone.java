@@ -64,6 +64,7 @@ public final class CasesStandalone extends JavaPlugin implements Listener {
         getCommand("home").setExecutor(new HomeCommand());
         getCommand("sethome").setExecutor(new SetHomeCommand());
         getCommand("spawn").setExecutor(new SpawnCommand());
+        getCommand("gamba").setExecutor(new GambaCommand());
 
         registerExpansion();
 
@@ -133,6 +134,12 @@ public final class CasesStandalone extends JavaPlugin implements Listener {
                     .audiencePlaceholder("name", (audience, ctx, queue) -> {
                         final Player player = (Player) audience;
                         return Tag.selfClosingInserting(player.name());
+                    })
+                    .audiencePlaceholder("time_played", (audience, ctx, queue) -> {
+                        final Player player = (Player) audience;
+                        int timePlayedSeconds = CaseStats.get(player.getUniqueId()).getTimePlayedSeconds();
+                        String formattedTime = Duration.seconds(timePlayedSeconds).formatText();
+                        return Tag.selfClosingInserting(Component.text(formattedTime));
                     })
                     .audiencePlaceholder("player_total_opens", (audience, ctx, queue) -> {
                         final Player player = (Player) audience;
