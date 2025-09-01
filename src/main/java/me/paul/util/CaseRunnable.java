@@ -43,7 +43,7 @@ public class CaseRunnable implements Runnable {
 
   protected CaseItem winningItem;
   protected final ItemStack winningItemStack;
-  private static final int WINNING_TICKET = 106; // 102 = folia, 100 = paper?
+  private static final int WINNING_TICKET = 108; // 102 = folia, 100 = paper?
   private Item winningItemInstance;
   protected CompletableFuture<Pair<CaseItem, ItemStack>> future;
 
