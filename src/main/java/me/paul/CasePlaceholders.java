@@ -13,12 +13,6 @@ import java.text.DecimalFormat;
 
 public class CasePlaceholders extends PlaceholderExpansion {
 
-  /**
-   * This method should always return true unless we
-   * have a dependency we need to make sure is on the server
-   * for our placeholders to work!
-   * This expansion does not require a dependency so we will always return true
-   */
   @Override
   public boolean canRegister() {
     return true;
@@ -26,7 +20,8 @@ public class CasePlaceholders extends PlaceholderExpansion {
 
   @Override
   public @NotNull String getIdentifier() {
-    return "wheel";
+    // use "case" so placeholders are %case_*%
+    return "case";
   }
 
   @Override
@@ -40,63 +35,71 @@ public class CasePlaceholders extends PlaceholderExpansion {
   }
 
   @Override
-  public @Nullable String onRequest(final OfflinePlayer player, @NotNull String params) {
-    //System.out.println("onREquest called with params: " + params);
+  public boolean persist() {
+    return true;
+  }
 
+  @Override
+  public @Nullable String onRequest(final OfflinePlayer player, @NotNull String params) {
+    if (player == null) return "";
+
+    // Player-specific placeholders
     if (params.equalsIgnoreCase("name")) {
       return player.getName();
-    } else if(params.equalsIgnoreCase("time_played")) {
+    } else if (params.equalsIgnoreCase("time_played")) {
       int timePlayedSeconds = CaseStats.get(player.getUniqueId()).getTimePlayedSeconds();
       return Duration.seconds(timePlayedSeconds).formatText();
     } else if (params.equalsIgnoreCase("player_total_opens")) {
       CaseStats stats = CaseStats.get(player.getUniqueId());
       return Util.format(stats.totalOpens());
     } else if (params.equalsIgnoreCase("total_emeralds_spent")) {
-      //System.out.println("HELLO");
       CaseStats stats = CaseStats.get(player.getUniqueId());
-      return Util.format(stats.totalOpens() * 1);
-    } else if (params.equalsIgnoreCase("total_opens")) {
+      return Util.format(stats.totalOpens() * 3); // 3 emeralds per open
+    }
+
+    // Global placeholders
+    if (params.equalsIgnoreCase("total_opens")) {
       int total = 0;
-      for (CaseStats stats : CaseStats.getAll())
-        total += stats.totalOpens();
+      for (CaseStats stats : CaseStats.getAll()) total += stats.totalOpens();
       return Util.format(total);
     } else if (params.equalsIgnoreCase("server_total_emeralds_spent")) {
       int total = 0;
-      for (CaseStats stats : CaseStats.getAll())
-        total += stats.totalOpens();
+      for (CaseStats stats : CaseStats.getAll()) total += stats.totalOpens() * 3;
       return Util.format(total);
     }
 
+    if (params.equalsIgnoreCase("red_total_opens_safe")) {
+      CaseStats stats = CaseStats.get(player.getUniqueId());
+      return Util.format(stats.getCaseOpens(CaseItem.CaseRarity.RED));
+    }
+
+    // Rarity placeholders
     for (CaseItem.CaseRarity rarity : CaseItem.CaseRarity.values()) {
-      String name = "total_" + rarity.name().toLowerCase() + "_opens";
-      String name2 = rarity.name().toLowerCase() + "_total_opens";
-      //System.out.println(name2);
-      String name3 = "total_" + rarity.name().toLowerCase() + "_percentage";
-      String name4 = rarity.name().toLowerCase() + "_total_percentage";
+      String key = rarity.name().toLowerCase();
 
-      if(params.equalsIgnoreCase(name)) {
+      String totalOpens = "total_" + key + "_opens";
+      String playerOpens = key + "_total_opens";
+      String totalPercentage = "total_" + key + "_percentage";
+      String playerPercentage = key + "_total_percentage";
+
+      if (params.equalsIgnoreCase(totalOpens)) {
         int total = 0;
-        for (CaseStats stats : CaseStats.getAll())
-          total += stats.getCaseOpens(rarity);
-
+        for (CaseStats stats : CaseStats.getAll()) total += stats.getCaseOpens(rarity);
         return Util.format(total);
-      } else if(params.equalsIgnoreCase(name2)) {
+      } else if (params.equalsIgnoreCase(playerOpens)) {
         CaseStats stats = CaseStats.get(player.getUniqueId());
         return Util.format(stats.getCaseOpens(rarity));
-      } else if(params.equalsIgnoreCase(name3)) {
+      } else if (params.equalsIgnoreCase(totalPercentage)) {
         double totalRarityOpens = 0;
         double total = 0;
-        for (CaseStats caseStats : CaseStats.getAll()) {
-          total += caseStats.totalOpens();
-          totalRarityOpens += caseStats.getCaseOpens(rarity);
+        for (CaseStats s : CaseStats.getAll()) {
+          total += s.totalOpens();
+          totalRarityOpens += s.getCaseOpens(rarity);
         }
-        double chance = totalRarityOpens / total;
-        if(totalRarityOpens == 0 || total == 0)
-          chance = 0;
-
+        double chance = (total == 0 ? 0 : (totalRarityOpens / total));
         DecimalFormat df = new DecimalFormat("##.##");
         return df.format(chance * 100);
-      } else if(params.equalsIgnoreCase(name4)) {
+      } else if (params.equalsIgnoreCase(playerPercentage)) {
         CaseStats stats = CaseStats.get(player.getUniqueId());
         DecimalFormat df = new DecimalFormat("##.##");
         return df.format(stats.getChance(rarity) * 100);
