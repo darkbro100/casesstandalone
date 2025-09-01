@@ -37,7 +37,7 @@ dependencies {
     testAnnotationProcessor ("org.projectlombok:lombok:1.18.30")
 
     compileOnly("me.clip:placeholderapi:2.11.6")
-    compileOnly("io.github.miniplaceholders:miniplaceholders-api:2.1.0")
+    compileOnly("io.github.miniplaceholders:miniplaceholders-api:3.0.1")
 }
 
 def targetJavaVersion = 21

@@ -123,78 +123,59 @@ public final class CasesStandalone extends JavaPlugin implements Listener {
     public void registerExpansion() {
         getLogger().info("Registering expansion");
 
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) { //
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().info("Registering case placeholders");
             new CasePlaceholders().register();
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("MiniPlaceholders")) {
             final Expansion.Builder expansionBuilder = Expansion.builder("case")
-                    .filter(Player.class)
-                    .audiencePlaceholder("name", (audience, ctx, queue) -> {
-                        final Player player = (Player) audience;
-                        return Tag.selfClosingInserting(player.name());
+                    .audiencePlaceholder(Player.class, "name", (player, queue, ctx) ->
+                            Tag.selfClosingInserting(player.name()))
+                    .audiencePlaceholder(Player.class, "time_played", (player, queue, ctx) -> {
+                        int secs = CaseStats.get(player.getUniqueId()).getTimePlayedSeconds();
+                        String formatted = Duration.seconds(secs).formatText();
+                        return Tag.selfClosingInserting(Component.text(formatted));
                     })
-                    .audiencePlaceholder("time_played", (audience, ctx, queue) -> {
-                        final Player player = (Player) audience;
-                        int timePlayedSeconds = CaseStats.get(player.getUniqueId()).getTimePlayedSeconds();
-                        String formattedTime = Duration.seconds(timePlayedSeconds).formatText();
-                        return Tag.selfClosingInserting(Component.text(formattedTime));
-                    })
-                    .audiencePlaceholder("player_total_opens", (audience, ctx, queue) -> {
-                        final Player player = (Player) audience;
+                    .audiencePlaceholder(Player.class, "player_total_opens", (player, queue, ctx) -> {
                         CaseStats stats = CaseStats.get(player.getUniqueId());
                         return Tag.selfClosingInserting(Component.text(Util.format(stats.totalOpens())));
                     })
-                    .audiencePlaceholder("total_emeralds_spent", (audience, ctx, queue) -> {
-                        final Player player = (Player) audience;
+                    .audiencePlaceholder(Player.class, "total_emeralds_spent", (player, queue, ctx) -> {
                         CaseStats stats = CaseStats.get(player.getUniqueId());
                         return Tag.selfClosingInserting(Component.text(Util.format(stats.totalOpens() * 3)));
                     })
-                    .globalPlaceholder("total_opens", (ctx, queue) -> {
+                    .globalPlaceholder("total_opens", (queue, ctx) -> {
                         int total = 0;
-                        for (CaseStats stats : CaseStats.getAll())
-                            total += stats.totalOpens();
-
+                        for (CaseStats s : CaseStats.getAll()) total += s.totalOpens();
                         return Tag.selfClosingInserting(Component.text(Util.format(total)));
                     })
-                    .globalPlaceholder("server_total_emeralds_spent", (ctx, queue) -> {
+                    .globalPlaceholder("server_total_emeralds_spent", (queue, ctx) -> {
                         int total = 0;
-                        for (CaseStats stats : CaseStats.getAll())
-                            total += (stats.totalOpens() * 3);
-
+                        for (CaseStats s : CaseStats.getAll()) total += (s.totalOpens() * 3);
                         return Tag.selfClosingInserting(Component.text(Util.format(total)));
                     });
 
             for (CaseItem.CaseRarity rarity : CaseItem.CaseRarity.values()) {
-                expansionBuilder.audiencePlaceholder(rarity.name().toLowerCase() + "_total_opens", (audience, ctx, queue) -> {
-                    final Player player = (Player) audience;
+                String key = rarity.name().toLowerCase();
+                expansionBuilder.audiencePlaceholder(Player.class, key + "_total_opens", (player, queue, ctx) -> {
                     CaseStats stats = CaseStats.get(player.getUniqueId());
                     return Tag.selfClosingInserting(Component.text(Util.format(stats.getCaseOpens(rarity))));
                 });
-                expansionBuilder.globalPlaceholder("total_" + rarity.name().toLowerCase() + "_opens", (ctx, queue) -> {
+                expansionBuilder.globalPlaceholder("total_" + key + "_opens", (queue, ctx) -> {
                     int total = 0;
-                    for (CaseStats stats : CaseStats.getAll())
-                        total += stats.getCaseOpens(rarity);
-
+                    for (CaseStats s : CaseStats.getAll()) total += s.getCaseOpens(rarity);
                     return Tag.selfClosingInserting(Component.text(Util.format(total)));
                 });
-                expansionBuilder.audiencePlaceholder(rarity.name().toLowerCase() + "_total_percentage", (audience, ctx, queue) -> {
-                    final Player player = (Player) audience;
+                expansionBuilder.audiencePlaceholder(Player.class, key + "_total_percentage", (player, queue, ctx) -> {
                     CaseStats stats = CaseStats.get(player.getUniqueId());
-
                     DecimalFormat df = new DecimalFormat("##.##");
                     return Tag.selfClosingInserting(Component.text(df.format(stats.getChance(rarity) * 100)));
                 });
-                expansionBuilder.globalPlaceholder("total_" + rarity.name().toLowerCase() + "_percentage", (ctx, queue) -> {
-                    double totalRarityOpens = 0;
-                    double total = 0;
-                    for (CaseStats caseStats : CaseStats.getAll()) {
-                        total += caseStats.totalOpens();
-                        totalRarityOpens += caseStats.getCaseOpens(rarity);
-                    }
-                    double chance = totalRarityOpens / total;
-
+                expansionBuilder.globalPlaceholder("total_" + key + "_percentage", (queue, ctx) -> {
+                    double totalRarity = 0, total = 0;
+                    for (CaseStats s : CaseStats.getAll()) { total += s.totalOpens(); totalRarity += s.getCaseOpens(rarity); }
+                    double chance = total == 0 ? 0 : totalRarity / total;
                     DecimalFormat df = new DecimalFormat("##.##");
                     return Tag.selfClosingInserting(Component.text(df.format(chance * 100)));
                 });
