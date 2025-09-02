@@ -68,11 +68,6 @@ public class CasePlaceholders extends PlaceholderExpansion {
       return Util.format(total);
     }
 
-    if (params.equalsIgnoreCase("red_total_opens_safe")) {
-      CaseStats stats = CaseStats.get(player.getUniqueId());
-      return Util.format(stats.getCaseOpens(CaseItem.CaseRarity.RED));
-    }
-
     // Rarity placeholders
     for (CaseItem.CaseRarity rarity : CaseItem.CaseRarity.values()) {
       String key = rarity.name().toLowerCase();
